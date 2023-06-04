@@ -74,7 +74,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Contact c = DataModel.getInstance().contacts.get(position);
+        Contact c = DataModel.getInstance().getContact(position);
         holder.textView1.setText(c.getName());
         holder.textView2.setText(c.getPhone());
 
@@ -82,7 +82,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return DataModel.getInstance().contacts.size();
+        return DataModel.getInstance().getContactsSize();
     }
 
 }

@@ -31,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recyclerView = findViewById(R.id.recyclerView);
+        DataModel.getInstance().createDatabase(getApplicationContext());
+
+
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -44,17 +47,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         adapter.setLongClickListener((view, position) -> {
-            Contact c = DataModel.getInstance().contacts.remove(position);
+
+            Contact c = DataModel.getInstance().getContact(position);
+                    DataModel.getInstance().removeContact(position);
             adapter.notifyItemRemoved(position);
-            DataModel.getInstance().saveToFile(this);
             View contextView = findViewById(android.R.id.content);
             Snackbar.make(contextView, "Contato Removido", Snackbar.LENGTH_LONG)
                     .setAction("Undo", v -> {
-                        DataModel.getInstance().contacts.add(position, c);
+                        DataModel.getInstance().insertContact(c, position);
                         adapter.notifyItemInserted(position);
-                        DataModel.getInstance().saveToFile(this);
-
-
                     })
                     .show();
             return true;
@@ -62,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        DataModel.getInstance().loadFromFile(this);
     }
 
     @Override

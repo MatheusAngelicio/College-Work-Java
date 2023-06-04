@@ -2,11 +2,6 @@ package com.example.agendaapplication.model;
 
 import android.content.Context;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 //Singleton
@@ -21,52 +16,66 @@ public class DataModel {
         return instance;
     }
 
-    public ArrayList<Contact> contacts = new ArrayList<>();
+    private ArrayList<Contact> contacts;
+    private ContactDataBase dataBase;
 
-    public ArrayList<String> getStringContacts() {
-        ArrayList<String> stringContacts = new ArrayList<>();
-        for (Contact c : contacts) {
-            stringContacts.add(c.getName());
-        }
-        return stringContacts;
+
+    public void createDatabase(Context context) {
+        dataBase = new ContactDataBase(context);
+        contacts = dataBase.getContactsFromDB();
     }
 
-    public void loadFromFile(Context context) {
-        try {
-            InputStream stream = context.openFileInput("contacts.txt");
-            InputStreamReader streamReader = new InputStreamReader(stream);
-            BufferedReader reader = new BufferedReader(streamReader);
-            contacts.clear();
-            String line;
-            while ((line = reader.readLine()) != null){
-                String []aux = line.split(",");
-                contacts.add(
-                        new Contact(aux[0], aux[1])
-                );
-            }
-            reader.close();
-            streamReader.close();
-            stream.close();
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
+    public ArrayList<Contact> getContacts() {
+        return contacts;
     }
 
-    public void saveToFile(Context context) {
-        try {
-            OutputStream stream = context.openFileOutput("contacts.txt", Context.MODE_PRIVATE);
-            OutputStreamWriter write = new OutputStreamWriter(stream);
-            for (Contact c: contacts){
-                write.write(c.getName()+";"+c.getPhone()+"\n");
-            }
-            write.flush();
-            write.close();
-            stream.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public Contact getContact(int position) {
+        return contacts.get(position);
     }
+
+    public int getContactsSize(){
+        return contacts.size();
+    }
+
+    public boolean addContact(Contact c) {
+        long id = dataBase.createContactInDB(c);
+        // se criou um ID, quer dizer que deu sucesso
+        if (id > 0) {
+            c.setId(id);
+            contacts.add(c);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean insertContact(Contact c, int position) {
+        long id = dataBase.insertContactInDB(c);
+        // se criou um ID, quer dizer que deu sucesso
+        if (id > 0) {
+            contacts.add(position, c);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean updateContact(Contact c, int position) {
+        int count = dataBase.updateContactInDB(c);
+        if (count == 1) {
+            contacts.set(position, c);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeContact(int position) {
+        int count = dataBase.removeContactInDB(
+                getContact(position)
+        );
+        if (count == 1) {
+            contacts.remove(position);
+            return true;
+        }
+        return false;
+    }
+
 }
